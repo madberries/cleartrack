@@ -72,7 +72,7 @@ public class FileInputStreamInstrumentationTest {
         // Test FileInputStream(pathName) pathName char data is trusted
         //                                pathName location is untrusted
         // The returned FileInputStream should be untrusted
-        pathName = new String("../Instrumentation/README.md");
+        pathName = new String("../cleartrack/README.md");
         boolean shouldTrust = FileInputStreamInstrumentation.shouldTrustContent(new File(pathName));
         try {
             fileInputStream = new FileInputStream(pathName); // FileNotFoundException
