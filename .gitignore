@@ -1,0 +1,29 @@
+# Ignore build genreated files
+src-native/*.o
+src-native/*.so
+src-native/*.jnilib
+bin
+lib/dangerous.jar
+lib/inliner.jar
+cleartrack.jar
+inst.err
+inst.out
+reports
+
+# Ignore javacc genereated source files
+src/pac/agent/hierarchy/ParseException.java
+src/pac/agent/hierarchy/SimpleCharStream.java
+src/pac/agent/hierarchy/SkippedClassesParser.java
+src/pac/agent/hierarchy/SkippedClassesParserConstants.java
+src/pac/agent/hierarchy/SkippedClassesParserTokenManager.java
+src/pac/agent/hierarchy/Token.java
+src/pac/agent/hierarchy/TokenMgrError.java
+
+# Ignore java preprocessed source files
+src-boot
+src-opts
+test-new
+
+# Ignore instrumentation generated files
+cleartrack.log
+output-inst
