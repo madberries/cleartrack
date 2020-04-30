@@ -1,0 +1,601 @@
+# If you change this file, make corrsponding changes to the JUnit tests that depend on these checks 
+
+# If test_harness_enabled is both present and set to "true", then:
+#   o environment variable "CURRENT_TEST_CASE" must be set to a meaningful string
+#     that will be ouput on each error
+#   o environment variable "TEST_HARNESS_PORT" must be set to a port number on the local machine.
+#     On each error the following things are written to that port on the local machine.
+#     The test case string,  a cwe number,  file name,  method,  line number
+#   o A server must be running, accepting local machine socket connections on port "TEST_HARNESS_PORT"
+test_harness_enabled false
+
+
+# Note on blacklist vs whitelist regular expressions
+#     blacklist regular expressions are compiled to a Pattern. The pattern uses matcher.find() to determine
+#     blacklist failure and to locate where in the parent string the blacklisted substring is.
+#     Your blacklist regular expressions must express some substring that when found within a parent string,
+#     blacklists the string. Do not write a blacklist expression that match the entire string.
+#     For example: To blacklist file names beginning with an untrusted "/",
+#                  use  ^/
+#                  and NOT  ^/.*
+#     Whitelist regular expressions uses matcher.matches(). For a white list regular expression to match, it
+#     must match the entire string.
+#     For example: To white list all file names that do not begin with slash, use
+#                  ^[^/].*
+#                  The above regular expresion matches any string whose first character is anything BUT /
+#                  followed by 0 or more of any character.
+#                  ^[^/] will work as a blacklist regular expression to blacklist any string beginning with /,
+#                  but will not work as a whitelist regular expression
+#
+log_file ./cleartrack.log
+shell_list /bin/csh sh ksh kshell tcsh tsh zsh bash dash
+
+# RESOURCES / CONCURRENCY
+deadlocks_enabled true
+toctou_action exception pac.config.CleartrackException
+
+# max_memory <percent of total available>
+max_memory .75
+
+# max_files <number of handles>
+max_files 2500
+
+# EXCEPTION / ERROR HANDLING
+max_array_alloc 5000000 replace
+trusted_exception_output replace X
+
+# PRIMITIVE OPERATIONS
+overflow exception pac.config.CleartrackException
+underflow exception pac.config.CleartrackException
+infinity exception pac.config.CleartrackException
+# If the following two lines are commented out, then toString() on an overflowed/underflowed
+# primitive will default to the action taken in the above two lines.
+overflow_print replace OVERFLOW
+underflow_print replace UNDERFLOW
+infinity_print replace INFINITY
+
+# Set timout for both client and server sockets.  A zero timeout means 
+# an infinite timeout (i.e. no timeout).
+server_socket_timeout 10000
+client_socket_timeout 10000
+
+# To mark all program arguments as untrusted, set this to true.
+# For now, we will set it to false, since JUnit passes a file
+# path as a command argument.  We still need to add some sort
+# of filtering capability to allow files of certain tainted
+# prefixes.
+taint_arguments false
+taint_env_vars true
+taint_db_reads true
+
+# Connection class options
+# If the data sent to these Connection methods is tainted and the value is false, then
+#   o a CleartrackException is thrown.
+#   o regardless of the the value, the "attack" is logged
+can_set_catalog_with_untrusted_data false
+can_set_clientinfo_with_untrusted_properties false
+can_set_clientinfo_with_untrusted_name_or_value false
+can_set_savepoint_with_untrusted_name false
+can_set_typemap_with_untrusted_map false
+
+# Port 5432 is for allowing PostGreSQL error messages through.
+trusted_ports 5432
+
+# System.getProperty(key) - Will return "" if key is untrusted,
+untrusted_key_can_access_property false
+
+# loop_check <max iters> <timeout> <action>
+# the timeout is specified in seconds, and is an optional argument
+loop_check 10000 240 break
+loop_check_def 10000 240 break
+
+# The following is essentially a loop check on recursive methods.
+# It accepts any one of the following options:
+#  - break (i.e. returns a default value)
+#  - exception
+#  - ignore
+#  - log_only
+max_stack_size 2000 exception pac.config.CleartrackException
+
+# allowable actions:
+#    replace <char>
+#    remove           (default action)
+#    log_only
+#    exception
+#    terminate
+null_byte_action remove
+
+# List of allowable types to write out to a file output stream
+# whose underlying file object is tainted.  Should we include
+# XML types? Is HTML ok?
+allowed_mimetypes
+    aif, aiff, aifc: audio/aiff, audio/x-aiff
+    avi: video/avi, video/msvideo, video/x-msvideo, application/x-troff-msvideo
+    bmp: image/bmp, image/x-windows-bmp, image/x-ms-bmp
+    boz, bz2: application/x-bzip2
+    bz: application/x-bzip
+    doc, dot: application/msword
+    docx: application/msword, application/zip
+    dvi: application/x-dvi
+    eps, ps: application/postscript
+    gif: image/gif
+    gtar: application/x-gtar
+    gz: application/x-compressed, application/x-gzip
+    gzip: application/x-gzip, multipart/x-gzip
+    hqx: application/binhex, application/binhex4, application/mac-binhex, application/mac-binhex40
+    htm, html, htmls: text/html
+    ico: image/x-icon
+    jpe, jpeg, jpg: image/jpeg, image/pjpeg
+    kar: audio/midi, audio/x-karaoke
+    m1v, m2v: video/mpeg
+    m2a: audio/mpeg
+    mid, midi: application/x-midi, audio/midi, audio/x-mid, audio/x-midi, music/crescendo, x-music/x-mid
+    mjpg: video/x-motion-jpeg
+    mod: audio/mod, audio/x-mod
+    moov, mov, qt: video/quicktime
+    mp2: audio/mpeg, audio/x-mpeg, video/mpeg, video/x-mpeg, video/x-mpeq2a
+    mp3: audio/mpeg3, audio/x-mpeg-3, video/mpeg, video/x-mpeg
+    mpa: audio/mpeg, video/mpeg, 
+    mpe, mpeg: video/mpeg
+    mpg: audio/mpeg, video/mpeg
+    mpga: audio/mpeg
+    pct, pic, pict: image/x-pict
+    pcx: image/x-pcx
+    pdf: application/pdf
+    png: image/png
+    pot, pps: application/mspowerpoint, application/vnd.ms-powerpoint
+    pov: model/x-pov
+    ppa: application/vnd.ms-powerpoint
+    ppt: application/mspowerpoint, application/powerpoint, application/vnd.ms-powerpoint, application/x-mspowerpoint
+    ppz: application/mspowerpoint
+    qif, qti, qtif: image/x-quicktime
+    ra: audio/x-pn-realaudio, audio/x-pn-realaudio-plugin, audio/x-realaudio
+    ram, rmm: audio/x-pn-realaudio
+    rmi: audio/mid
+    rmp: audio/x-pn-realaudio, audio/x-pn-realaudio-plugin
+    rt: text/richtext, text/vnd.rn-realtext
+    rtf: application/rtf, application/x-rtf, text/richtext
+    rtx: application/rtf, text/richtext
+    rv: video/vnd.rn-realvideo
+    sea: application/sea, application/x-sea
+    shtml: text/html, text/x-server-parsed-html
+    snd: audio/basic, audio/x-adpcm
+    tgz: application/gnutar, application/x-compressed
+    tif, tiff: image/tiff, image/x-tiff
+    uu, uue: text/x-uuencode
+    wav: audio/wav, audio/x-wav
+    word: application/msword
+    wp, wp5, wpd: application/wordperfect
+    wp6: appilcation/wordperfect, application/wordperfect6.0
+    xbm: image/x-xbitmap, image/x-xbm, image/xbm
+    xl: application/excel
+    xla: application/excel, application/x-excel, application/x-msexcel
+    xlb, xlc, xll, xlm: application/excel, application/vnd.ms-excel, application/x-excel
+    xld, xlk, xlt, xlv: application/excel, application/x-excel
+    xls, xlw: application/excel, application/vnd.ms-excel, application/x-excel, application/x-msexcel
+    xm: audio/xm
+    x-png: image/png
+    z: application/x-compress, application/x-compressed
+    zip: application/x-compressed, application/x-zip-compressed, application/zip, multipart/x-zip
+    *: text/plain, application/x-empty
+end allowed_mimetypes
+
+unallowed_mimetype_action exception pac.config.CleartrackException
+
+# this entry looks like:
+# trusted_exec_paths path1:path2:path3
+# trusted_exec_paths is followed by any number of colon separated paths.
+#
+# When an application specifies an executable as a leaf,
+# If the leaf does not live in one of the paths listed in trusted_exec_paths,
+# then take the action specifed in trusted_exec_paths_action.
+#         
+trusted_exec_paths /usr/bin:/bin:/usr/sbin:/sbin
+
+tokenizer cmdTokenizer
+    quoted_block " \
+end tokenizer
+
+# o For Runtime.exe() commands and for ProcessBuilder.start(),
+#   if any path component(s) of $PATH are not trusted, take the
+#   action specfied here.
+# o When an application specifies an executable as a leaf,
+#   If the leaf does not live in one of the paths listed in
+#   trusted_exec_paths, then take the action specifed here.
+#   trusted_exec_paths_action must be set to one of the following
+#     log_only
+#     terminate
+#     exception 
+trusted_exec_paths_action exception pac.config.CleartrackException
+
+# this says any untrusted characters will fail 
+check must_trust
+    internal_black .
+    black_failure_action exception pac.config.CleartrackException
+end check
+
+
+#   Specify here the regular expressions that specify files/locations whose contents is trusted.
+#   FileInputStream objects, FileReader objects, and objects composed from them are tainted or unknown
+#   depending on a canonical file path as determined from the regular expression.
+#   For now the check is limited to internal white list
+#   All paths must be canonical (do not specify relative pathnames)
+#   The white_failure_action line is ignored
+check trusted_stream_files
+    internal_white /bin/.+|/usr/bin/.+|/usr/local/bin/.+|/System/Library/.+|/Applications/eclipse/.+|/private/etc/hosts|/etc/hosts|/afs/csail\.mit\.edu/system/.+|.+junit[0-9]+.properties|.+junittestcases[0-9]+.properties|.+/ESAPI\.properties|.+/temp2\.obj|.+/users.xml
+    white_failure_action log_only
+end check
+
+#  The only allowed white_failure_action is log_only
+check trusted_properties
+    internal_white org.owasp.esapi.resources
+    white_failure_action log_only
+end check
+
+check filename_check{CWE-23}
+    token_whitespace replace _
+    traversal_count replace _ 
+    internal_white [a-zA-Z0-9_#$+\-/.~@]{1,256}
+    white_failure_action exception pac.config.CleartrackException
+    prefix_black   ^\./|^\s|^/|^~
+#   Note: [.]{2,] replaces ... with ___
+#         [/]{2}  replaces /// with __/
+#
+    internal_black [.]{3}|[/]{2}|;
+    suffix_black  \s$|/$|\\$|\+$|\.$|\\0$
+    black_failure_action replace _
+#   black_failure_action exception pac.config.CleartrackException
+end check
+
+# shell_runs_this_command is a hard-coded check name and is used in two particular cases
+# 
+# First case
+# The idea here is to process Runtime.exec(String[], ...) where the String array elements
+# might for example be: "csh"  "-c"  "-f"  "<command>"
+# This check is used with Runtime.exec(String[])
+#                      or Runtime.exec(String[], String[])
+#                      or Runtime.exec(String[], String[], File) when:
+# o When shell_list is defined in this configuration file
+#   and String[0] matches one of the shells listed in shell_list
+# o and String[n] is "-c"
+#   Then the check directives specified in this check are applied to String[2]
+#
+# Second case
+# The idea here is to process Runtime.exe("bash --noprofile -f -c <command>")
+# This check is used with Runtime.exec(String)
+#                         Runtime.exec(String, String[])
+#                         Runtime.exec(String, String[], File)
+# o When shell_list is defined in the configuration file, and the first token of the first parameter matches
+#   one of the shells listed in shell_list
+# o and a "-c" option is discovered
+#   Then the check directives specified in this check are applied to the <commands> string
+check shell_runs_this_command
+    # Tokenize String[2]. Apply check must_trust to any untrusted characters in the first token
+    tokenizer cmdTokenizer
+    token 0 must_trust
+    qstring replace
+    # apply this check to the untrusted sections of String[2]
+    filename_check
+end check
+
+check execCmdArray{CWE-78}
+    array 0 must_trust
+    filename_check
+end check
+
+# Runtime.exec(String)
+check execCmdString{CWE-78}
+   white_encodings OS
+   white_encodings_action exception pac.config.CleartrackException
+   token 0 must_trust
+   filename_check
+end check
+
+# Runtime.exec(String[]<check_name>, ...)
+#   check shell_runs_this_command will be used if the following are true
+#      String[0] is a shell as listed in shell_list
+#      String[1] is "-c"
+#      shell_runs_this_command is defined in the config file
+#   otherwise the named check will be used
+# Runtime.exec(String <check_name>, ...)
+#   check shell_runs_this_command will be used if the following are true
+#      token 0 in String is a shell as listed in shell_list
+#      token 1 in String is "-c"
+#      shell_runs_this_command is defined in the config file
+#   otherwise the named check will be used
+#
+desc Runtime.exec(String[]execCmdArray)
+desc Runtime.exec(String[]execCmdArray, String[])
+desc Runtime.exec(String[]execCmdArray, String[], File)
+desc Runtime.exec(String execCmdString)
+desc Runtime.exec(String execCmdString, String[])
+desc Runtime.exec(String execCmdString, String[], File)
+
+# Note: String[]execCmdArray is not a paramter to start. The instrumented
+# ProcessBuilder.start retrieves the command from processbuilder.command().
+# String[]execCmdArray exists here so that a Chk can be returned which
+# can operate on that command.
+desc ProcessBuilder.start(String[]execCmdArray)
+
+check url_filename_check{CWE-99}
+	traversal_count replace _ 
+    internal_white [a-zA-Z0-9/.\-@?_]{1,256}
+    white_failure_action exception pac.config.CleartrackException
+    internal_black [.]{3}|[/]{2}
+    prefix_black ^/
+    # in this check, for now failure_action can not be replace
+    black_failure_action exception pac.config.CleartrackException
+end check
+
+##############################################
+# URL                                        #
+##############################################
+desc java.net.URL.<init>(java.lang.String){getProtocol=file} url_filename_check
+desc java.net.URL.<init>(java.lang.String{=file}, java.lang.String, int, java.lang.String url_filename_check)
+desc java.net.URL.<init>(java.lang.String{=file}, java.lang.String, int, java.lang.String url_filename_check, java.net.URLStreamHandler)
+desc java.net.URL.<init>(java.lang.String{=file}, java.lang.String, java.lang.String url_filename_check)
+desc java.net.URL.<init>(java.net.URL, java.lang.String){getProtocol=file} url_filename_check
+desc java.net.URL.<init>(java.net.URL, java.lang.String, java.net.URLStreamHandler){getProtocol=file} url_filename_check
+
+
+check uri_filename_check{CWE-99}
+	traversal_count replace _ 
+    internal_white [a-zA-Z0-9/.\-@?_]{1,256}
+    white_failure_action exception pac.config.CleartrackException
+    internal_black [.]{3}|[/]{2}
+    prefix_black ^/
+    # in this check, for now failure_action can not be replace
+    black_failure_action exception pac.config.CleartrackException
+end check
+
+##############################################
+# URI                                        #
+##############################################
+desc java.net.URI.<init>(java.lang.String){getScheme=file} uri_filename_check
+desc java.net.URI.<init>(java.lang.String{=file}, java.lang.String, java.lang.String) uri_filename_check
+desc java.net.URI.<init>(java.lang.String{=file}, java.lang.String, java.lang.String, int, java.lang.String uri_filename_check, java.lang.String, java.lang.String)
+desc java.net.URI.<init>(java.lang.String{=file}, java.lang.String, java.lang.String uri_filename_check, java.lang.String)
+desc java.net.URI.<init>(java.lang.String{=file}, java.lang.String, java.lang.String uri_filename_check, java.lang.String, java.lang.String)
+
+
+##############################################
+# HttpServletResponse                        #
+##############################################
+
+desc javax.servlet.http.HttpServletResponse.sendRedirect(java.lang.String must_trust{CWE-601})
+desc javax.servlet.http.HttpServletResponse.setHeader(java.lang.String{=location} must_trust{CWE-601}, java.lang.String must_trust{CWE-601})
+desc javax.servlet.http.HttpServletResponse.addHeader(java.lang.String{=location} must_trust{CWE-601}, java.lang.String must_trust{CWE-601})
+
+
+##############################################
+# Class                                      #
+##############################################
+
+desc java.net.URLClassLoader.<init>(java.net.URL[] must_trust{CWE-470})
+desc java.net.URLClassLoader.<init>(java.net.URL[] must_trust{CWE-470}, java.lang.ClassLoader)
+desc java.net.URLClassLoader.<init>(java.net.URL[] must_trust{CWE-470}, java.lang.ClassLoader, java.net.URLStreamHandlerFactory)
+desc java.lang.ClassLoader.loadClass(java.lang.String must_trust{CWE-470})
+desc java.lang.Class.forName(java.lang.String must_trust{CWE-470})
+desc java.lang.Class.forName(java.lang.String must_trust{CWE-470}, boolean, java.lang.ClassLoader)
+desc java.lang.Class.getField(java.lang.String must_trust{CWE-470})
+desc java.lang.Class.getDeclaredField(java.lang.String must_trust{CWE-470})
+desc java.lang.Class.getMethod(java.lang.String must_trust{CWE-470}, java.lang.Class[])
+desc java.lang.Class.getDeclaredMethod(java.lang.String must_trust{CWE-470}, java.lang.Class[])
+
+
+##############################################
+# FileInputStream                            #
+##############################################
+
+desc java.io.FileInputStream.<init>(java.lang.String filename_check)
+desc java.io.FileReader.<init>(java.lang.String filename_check)
+
+
+##############################################
+# FileOutputStream                           #
+##############################################
+
+desc java.io.FileOutputStream.<init>(java.lang.String filename_check)
+desc java.io.FileOutputStream.<init>(java.lang.String filename_check, boolean)
+desc java.io.FileWriter.<init>(java.lang.String filename_check)
+desc java.io.FileWriter.<init>(java.lang.String filename_check, boolean)
+desc java.io.PrintStream.<init>(java.lang.String filename_check)
+desc java.io.PrintStream.<init>(java.lang.String filename_check, java.lang.String)
+desc java.io.PrintWriter.<init>(java.lang.String filename_check)
+desc java.io.PrintWriter.<init>(java.lang.String filename_check, java.lang.String)
+desc java.util.Formatter.<init>(java.lang.String filename_check)
+desc java.util.Formatter.<init>(java.lang.String filename_check, java.lang.String)
+desc java.util.Formatter.<init>(java.lang.String filename_check, java.lang.String, java.util.Locale)
+
+
+##############################################
+# File                                       #
+##############################################
+
+desc java.io.File.<init>(java.io.File, java.lang.String filename_check)
+desc java.io.File.<init>(java.lang.String filename_check)
+desc java.io.File.<init>(java.lang.String filename_check, java.lang.String filename_check)
+desc java.nio.file.FileSystem.getPath(java.lang.String, java.lang.String[]) filename_check
+desc java.nio.file.Path.resolve(java.lang.String) filename_check
+
+
+##############################################
+# SQL Injection checks...                    #
+##############################################
+
+# Define a tokenizer for SQL that treats single and double-quoted strings (in trusted quotes)
+# as whole tokens.  
+tokenizer sqlTokenizer
+    tokens :,;()[]=<>%&|?
+    quoted_block ' ' \
+    quoted_block " " \
+end tokenizer
+
+# This query will throw a runtime exception if a non-numeric token within tainted regions is found.
+# However, we only want to perform this check if the current token (i.e. tainted region) is not
+# a single or double-quoted string and the previous token is an equals.
+check sqlNumericChk
+    tokenizer sqlTokenizer
+    token_match -1 =|<|>
+    token_nomatch 0 ^\'.*\'$|^\".*\"$
+    internal_white ^(\+|-)?[0-9]*\.?[0-9]+((e|E)(\+|-)?[0-9]+)?$
+    white_failure_action exception pac.config.CleartrackException
+end check
+
+check sqlQuoteChk
+    tokenizer sqlTokenizer
+    qstring replace
+end check
+
+check sqlChk{CWE-89}
+    white_encodings SQL
+    white_encodings_action exception pac.config.CleartrackException
+    sqlNumericChk
+    sqlQuoteChk
+end check
+
+desc java.sql.Statement.addBatch(java.lang.String sqlChk)
+desc java.sql.Statement.execute(java.lang.String sqlChk)
+desc java.sql.Statement.execute(java.lang.String sqlChk, int)
+desc java.sql.Statement.execute(java.lang.String sqlChk, int[])
+desc java.sql.Statement.execute(java.lang.String sqlChk, java.lang.String[])
+desc java.sql.Statement.executeQuery(java.lang.String sqlChk)
+desc java.sql.Statement.executeUpdate(java.lang.String sqlChk)
+desc java.sql.Statement.executeUpdate(java.lang.String sqlChk, int)
+desc java.sql.Statement.executeUpdate(java.lang.String sqlChk, int[])
+desc java.sql.Statement.executeUpdate(java.lang.String sqlChk, java.lang.String[])
+
+desc java.sql.Connection.prepareCall(java.lang.String sqlChk)
+desc java.sql.Connection.prepareCall(java.lang.String sqlChk, int, int)
+desc java.sql.Connection.prepareCall(java.lang.String sqlChk, int, int, int)
+desc java.sql.Connection.prepareStatement(java.lang.String sqlChk)
+desc java.sql.Connection.prepareStatement(java.lang.String sqlChk, int)
+desc java.sql.Connection.prepareStatement(java.lang.String sqlChk, int[])
+desc java.sql.Connection.prepareStatement(java.lang.String sqlChk, java.lang.String[])
+desc java.sql.Connection.prepareStatement(java.lang.String sqlChk, int, int)
+desc java.sql.Connection.prepareStatement(java.lang.String sqlChk, int, int, int)
+
+desc org.hibernate.Session.createQuery(java.lang.String sqlChk{CWE-564})
+
+##############################################
+# XPath Injection checks...                  #
+##############################################
+
+# Define a tokenizer for XPath that treats single and double-quoted strings (in trusted quotes)
+# as whole tokens.  
+tokenizer xpathTokenizer
+    tokens :,;()[]=<>%&|?
+    quoted_block '
+    quoted_block "
+end tokenizer
+
+# This query will throw a runtime exception if a non-numeric (or alpha-numeric) token within 
+# tainted regions is found.  However, we only want to perform this check if the current token 
+# (i.e. tainted region) is not a single or double-quoted string and the previous token is an
+# equals.
+check xpathNumericOrAlphaNumericChk
+    tokenizer xpathTokenizer
+    token_match -1 =|<|>
+    token_nomatch 0 ^\'.*\'$|^\".*\"$
+    internal_white ^(((\+|-)?[0-9]*\.?[0-9]+)|([a-zA-Z][a-zA-Z0-9]*))$
+    white_failure_action exception pac.config.CleartrackException
+end check
+
+check xpathQuoteChk
+    tokenizer xpathTokenizer
+    qstring replace
+end check
+
+check xpathChk{CWE-643}
+    white_encodings XPATH
+    white_encodings_action exception pac.config.CleartrackException
+    xpathNumericOrAlphaNumericChk
+    xpathQuoteChk
+end check
+
+desc javax.xml.xpath.XPath.compile(java.lang.String xpathChk)
+desc javax.xml.xpath.XPath.evaluate(java.lang.String xpathChk, org.xml.sax.InputSource)
+desc javax.xml.xpath.XPath.evaluate(java.lang.String xpathChk, org.xml.sax.InputSource, javax.xml.namespace.QName)
+desc javax.xml.xpath.XPath.evaluate(java.lang.String xpathChk, java.lang.Object)
+desc javax.xml.xpath.XPath.evaluate(java.lang.String xpathChk, java.lang.Object, javax.xml.namespace.QName)
+
+##############################################
+# LDAP Injection checks...                   #
+##############################################
+
+tokenizer ldapTokenizer
+    tokens :,;()[]=<>%&|?
+    char_map * \2a replace
+    char_map ( \28 replace
+    char_map ) \29 replace
+    char_map \ \5c replace
+end tokenizer
+
+check ldapChk{CWE-90}
+    white_encodings LDAP DN
+    white_encodings_action exception pac.config.CleartrackException
+    tokenizer ldapTokenizer
+end check
+
+desc javax.naming.directory.DirContext.search(java.lang.String, java.lang.String ldapChk, javax.naming.directory.SearchControls)
+desc javax.naming.directory.DirContext.search(java.lang.String, java.lang.String ldapChk, java.lang.Object[], javax.naming.directory.SearchControls)
+desc javax.naming.directory.DirContext.search(javax.naming.Name, java.lang.String ldapChk, javax.naming.directory.SearchControls)
+desc javax.naming.directory.DirContext.search(javax.naming.Name, java.lang.String ldapChk, java.lang.Object[], javax.naming.directory.SearchControls)
+
+##############################################
+# XQuery Injection checks...                 #
+##############################################
+
+# Define a tokenizer for XPath that treats single and double-quoted strings (in trusted quotes)
+# as whole tokens.  
+tokenizer xqueryTokenizer
+    tokens :,;()[]=<>%&|?
+    quoted_block ' '
+    quoted_block " "
+end tokenizer
+
+# This query will throw a runtime exception if a non-numeric (or alpha-numeric) token within 
+# tainted regions is found.  However, we only want to perform this check if the current token 
+# (i.e. tainted region) is not a single or double-quoted string and the previous token is an
+# equals.
+check xqueryNumericOrAlphaNumericChk
+    tokenizer xqueryTokenizer
+    token_match -1 =|<|>
+    token_nomatch 0 ^\'.*\'$|^\".*\"$
+    internal_white ^(((\+|-)?[0-9]*\.?[0-9]+)|([a-zA-Z][a-zA-Z0-9]*))$
+    white_failure_action exception pac.config.CleartrackException
+end check
+
+check xqueryQuoteChk
+    tokenizer xqueryTokenizer
+    qstring replace
+end check
+
+check xqueryChk{CWE-652}
+    white_encodings XPATH
+    white_encodings_action exception pac.config.CleartrackException
+    xqueryNumericOrAlphaNumericChk
+    xqueryQuoteChk
+end check
+
+# May want to perform a different check for commands
+# if syntactically different.  But it appears to work
+# in the same fashion.  I could not find sufficient
+# documentation describing what a "command" actually is.
+desc javax.xml.xquery.XQExpression.executeCommand(java.lang.String xqueryChk)
+desc javax.xml.xquery.XQExpression.executeCommand(java.io.Reader xqueryChk)
+desc javax.xml.xquery.XQExpression.executeQuery(java.lang.String xqueryChk)
+desc javax.xml.xquery.XQExpression.executeQuery(java.io.Reader xqueryChk)
+desc javax.xml.xquery.XQExpression.executeQuery(java.io.InputStream xqueryChk)
+
+##############################################
+# backstop checks...                         #
+##############################################
+
+# This check will throw a runtime exception if a non-numeric and non-alphanumeric token 
+# within tainted regions is found.
+check numericOrAlphaNumericChk
+    internal_white ^([0-9]+|[a-zA-Z][a-zA-Z0-9]*)$
+    white_failure_action exception pac.config.CleartrackException
+end check
+

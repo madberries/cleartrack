@@ -1,0 +1,195 @@
+################################################################################
+# Rules are ORed together with short-circuit in mind, so order in this case    #
+# matters. You can define your own rule "foo" as follows.                      #
+#                                                                              #
+# foo:                                                                         #
+#   <rule_1> ... <rule_n>                                                      #
+#                                                                              #
+# The "app", "jdk", and "dangerous" rules must be defined here.  All other     #
+# rules are optional.  The rules in your defined rule can refer to other       #
+# rules you've defined.  Or they should consist of an operator followed        #
+# by a fully-qualified class name (or a prefix to one).  Rules are ORed        #
+# together.  To negate a sequence of rules, you need to wrap it in a           #
+# !( ... ) block.  Such as the following...                                    # 
+#                                                                              #
+# foo:                                                                         #
+#   !( <rule_1> ... <rule_n> )                                                 #
+#                                                                              #
+# The following are the list of legal operators:                               #
+# ----------------------------------------------                               #
+# =   equals                                                                   #
+# !=  not equals                                                               #
+# ~   is a                                                                     #
+# !~  is not a                                                                 #
+# ^   starts with                                                              #
+# !^  not starts with                                                          #
+################################################################################
+
+app:
+   .shared
+   #add app rules here
+jdk:
+   .shared
+   !(
+      #########################################
+      # PRIMITIVE DANGEROUS CLASSES ###########
+      #########################################
+      # = java/lang/Object 
+      = java/lang/String
+      .dangerous
+
+      #########################################
+      # UTILITY CLASSES #######################
+      #########################################
+      ~ java/lang/ClassLoader
+      ~ java/lang/Thread$UncaughtExceptionHandler
+      ~ java/lang/Throwable
+      ~ java/lang/Throwable$PrintStreamOrWriter
+      = java/lang/Number
+      = java/lang/Math
+      = java/lang/StrictMath
+      = java/math/MutableBigInteger
+      = java/math/BigInteger
+      = java/math/BigDecimal
+      = java/math/BigDecimal$StringBuilderHelper
+      ~ sun/misc/FloatingDecimal
+      ~ sun/misc/FloatingDecimal$BinaryToASCIIConverter
+      ~ sun/misc/FDBigInteger
+      = java/lang/System
+      = java/lang/reflect/Field
+      = java/lang/reflect/Array
+      ~ java/lang/reflect/InvocationHandler
+      = java/util/Arrays
+      ~ java/util/Date
+      = java/util/DualPivotQuicksort
+      ~ java/util/Random
+      ~ java/util/ResourceBundle
+      ~ java/util/ResourceBundle$Control
+      ~ java/util/Properties
+      ~ java/util/Properties$LineReader
+      = java/util/Locale
+      = java/util/Scanner
+      ~ java/util/StringTokenizer
+      ~ java/util/concurrent/TimeUnit
+      ~ java/sql/ResultSet
+      ~ sun/net/www/ParseUtil
+      
+      #########################################
+      # CHARACTER-BASED CLASSES ###############
+      #########################################
+      ~ java/lang/AbstractStringBuilder
+      ~ java/lang/Appendable
+      ~ java/lang/CharacterData
+      = java/lang/CharSequence
+      = java/util/Formatter
+      ~ java/util/Formatter$FormatString
+      = java/util/regex/Pattern
+      ^ java/util/regex/Pattern$
+      = java/util/regex/Matcher
+      
+      #########################################
+      # I/O CLASSES ###########################
+      #########################################
+      ~ java/lang/Readable
+      ~ java/io/DataInput
+      ~ java/io/DataOutput
+      ~ java/io/InputStream
+      ~ java/io/Reader
+      ~ java/io/OutputStream
+      ~ java/io/Writer
+      ~ java/io/StreamTokenizer
+      ~ java/util/zip/Checksum
+      ~ java/util/zip/ZipFile
+      ~ java/util/zip/ZipEntry
+      = java/util/zip/ZipCoder
+      ~ java/util/zip/Deflater
+      ~ java/util/zip/Inflater
+      ~ java/nio/channels/Channel
+      
+      #########################################
+      # FILE-BASED CLASSES ####################
+      #########################################
+      = java/io/File
+      = java/io/File$TempDirectory
+      = java/io/FileDescriptor
+      ~ java/io/FileSystem
+      ~ java/io/RandomAccessFile
+      ~ java/nio/file/FileSystem
+      ~ java/nio/file/Path
+      = java/nio/file/Paths
+      = java/nio/file/Files 
+      ~ sun/nio/fs/Path
+      ~ sun/nio/fs/Util
+      
+      #########################################
+      # URL CLASSES ###########################
+      #########################################
+      = java/net/URL
+      = java/net/URI
+      = java/net/URI$Parser
+      ~ java/net/URLStreamHandler
+      ~ java/net/URLEncoder
+      ~ java/net/URLDecoder
+      ~ java/net/URLConnection
+
+      #########################################
+      # CHARSET ENCODING CLASSES ##############
+      #########################################
+      ~ java/nio/Buffer
+      ~ java/nio/charset/CoderResult
+      ~ java/nio/charset/CoderResult$Cache
+      ~ java/nio/charset/Charset
+      ~ java/nio/charset/CharsetEncoder
+      ~ java/nio/charset/CharsetDecoder
+      ~ sun/nio/cs/ThreadLocalCoders
+      = sun/nio/cs/ThreadLocalCoders$Cache
+      = sun/nio/cs/ThreadLocalCoders$1
+      = sun/nio/cs/ThreadLocalCoders$2
+      = sun/nio/cs/ArrayEncoder
+      = sun/nio/cs/ArrayDecoder
+      ^ java/lang/StringCoding
+      = sun/nio/cs/ext/ISO2022_JP_2$CoderHolder
+      
+      #########################################
+      # XML/XPATH CLASSES #####################
+      #########################################
+      ~ java/beans/XMLEncoder
+      ~ java/beans/XMLDecoder
+      ~ javax/xml/parsers/SAXParser
+      ~ javax/xml/xpath/XPath
+      ~ javax/xml/xpath/XPathExpression
+      ^ org/xml/sax 
+      ^ org/w3c/dom 
+      ^ com/sun/org/apache
+      ^ java/beans
+      ^ com/sun/beans
+      ^ javax/xml
+      ^ com/sun/xml
+
+      #########################################
+      # Encodings with large clinit()V methods
+      #########################################
+      ^ org/apache/cocoon/components/serializers/encoding/ 
+   )
+shared:
+   = org/apache/jasper/runtime/JspSourceDependent
+   ~ java/lang/annotation/Annotation
+   ~ java/io/ObjectOutputStream
+   ~ java/io/ObjectInputStream
+
+   #########################################
+   # HIBERNATE CLASSES TO SKIP #############
+   #########################################
+   ~ javassist/util/proxy/ProxyObject
+   ~ org/hibernate/proxy/HibernateProxy
+dangerous:
+   = java/lang/Byte
+   = java/lang/Short
+   = java/lang/Integer
+   = java/lang/Float
+   = java/lang/Long
+   = java/lang/Double
+   = java/lang/Character
+   = java/lang/Boolean
+   = sun/misc/FloatingDecimal
+   = sun/misc/FloatingDecimal$FDBigInt

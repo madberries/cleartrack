@@ -1,0 +1,6 @@
+Test	Tag	Value	Comment
+injectUsingNonString1	count	count
+injectUsingNonString2	count	1 OR 1=1
+injectUsingOr	password	blah' OR 1=1 --	"produces a query, for verify password, that is always true"
+injectUsingComment	name suffix	 ' -- 	"produces a query, for verify password, in which the password check is commented out"
+injectUsingSemicolon	name	'; DELETE FROM employees WHERE 1=1 --'	deletes all employees using lookupEmail

@@ -1,0 +1,255 @@
+options
+{
+  STATIC = false;
+  //DEBUG_PARSER = true;
+}
+
+PARSER_BEGIN(SkippedClassesParser)
+package pac.agent.hierarchy;
+
+import java.io.InputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+
+public class SkippedClassesParser {
+   private ClassHierarchy hierarchy;
+
+   public SkippedClassesParser(ClassHierarchy hierarchy, InputStream in) {
+      this(in);
+      this.hierarchy = hierarchy;
+   }
+   
+   public interface SkipRule {
+      public boolean isSkipped(String className);
+   }
+
+   private class CompositeRule implements SkipRule {
+      private List<SkipRule> ruleRefs;
+      
+      public CompositeRule() {
+         ruleRefs = new LinkedList<SkipRule>();
+      }
+
+      public boolean isSkipped(String className) {
+         for (SkipRule rule : ruleRefs) {
+             if (rule.isSkipped(className))
+                 return true;
+         }
+         return false;
+      }
+
+      public void addRule(SkipRule rule) {
+         ruleRefs.add(rule);
+      }
+   }
+
+   private class NotRule implements SkipRule {
+      private SkipRule ruleRef;
+      
+      public NotRule(SkipRule ruleRef) {
+         this.ruleRef = ruleRef;
+      }
+
+      public boolean isSkipped(String className) {
+         return !ruleRef.isSkipped(className);
+      }
+   }
+
+   private class SimpleRule implements SkipRule {
+      public static final int EQUALS = 0;
+      public static final int NOT_EQUALS = 1;
+      public static final int IS_A = 2;
+      public static final int NOT_IS_A = 3;
+      public static final int STARTS_WITH = 4;
+      public static final int NOT_STARTS_WITH = 5;
+
+      private String match;
+      private int type;
+      
+      public SimpleRule(int type, String match) {
+         this.type = type;
+         this.match = match;
+      }
+
+      public boolean isSkipped(String className) {
+         switch (type) {
+            case EQUALS:
+               return className.equals(match);
+            case NOT_EQUALS:
+               return !className.equals(match);
+            case IS_A:
+               return hierarchy.isA(className, match);
+            case NOT_IS_A:
+               return !hierarchy.isA(className, match);
+            case STARTS_WITH:
+               return className.startsWith(match);
+            case NOT_STARTS_WITH:
+               return !className.startsWith(match);
+            default:
+         }
+         return false;
+      }
+   }
+}
+
+PARSER_END(SkippedClassesParser)
+
+SKIP :
+{
+  " " // skip blanks
+| "\t" // skip tabs
+| "\n" // skip newlines
+| "\r" // skip returns
+| < "#" (~[ "\n", "\r" ])*
+    (
+      "\n"
+    | "\r"
+    | "\r\n"
+    ) > // skip single-line comments
+}
+
+TOKEN :
+{
+  < EQ : "=" >
+| < NEQ : "!=" >
+| < ISA : "~" >
+| < NISA : "!~" >
+| < SW: "^" >
+| < NSW: "!^" >
+| < NOT: "!" >
+| < DOT: "." >
+| < L_PAREN: "(" >
+| < R_PAREN: ")" >
+| < COLON: ":" >
+| < ID :
+    (< LETTER >)+
+    (
+      < DIGIT >
+    | < LETTER >
+    | < SPECIAL >
+    )* >
+| < #LETTER : [ "a"-"z", "A"-"Z" ] >
+| < #DIGIT : [ "0"-"9" ] >
+| < #SPECIAL :
+    "$"
+  | "_"
+  | "-"
+  | "/" >
+}
+
+/** Root production. */
+Map<String, SkipRule> parse() :
+{
+  Map<String, SkipRule> ruleDefMap = new TreeMap<String, SkipRule>();
+}
+{
+  (
+    ruleDef(ruleDefMap)
+  )*
+  {
+    return ruleDefMap;
+  }
+}
+
+void ruleDef(Map<String, SkipRule> ruleDefMap) :
+{
+  SkipRule rule = null;
+  CompositeRule compositeRule = new CompositeRule();
+  Token name;
+}
+{
+  name = < ID > < COLON >
+  (
+    rule = ruleRef(ruleDefMap)
+    {
+      compositeRule.addRule(rule);
+    }
+  )*
+  {
+    if (!ruleDefMap.containsKey(name.image))
+      ruleDefMap.put(name.image, compositeRule);
+    else
+      ((CompositeRule)ruleDefMap.get(name.image)).addRule(compositeRule);
+  }
+}
+
+SkipRule ruleRef(Map<String, SkipRule> ruleDefMap) :
+{
+  SkipRule rule = null;
+  CompositeRule compositeRule = new CompositeRule();
+  Token match, ruleName;
+  int type;
+}
+{
+  (
+    type = operator() match = < ID >
+  )
+  {
+    return new SimpleRule(type, match.image);
+  }
+  |
+  (
+    < DOT > ruleName = < ID >
+  )
+  {
+    SkipRule result = ruleDefMap.get(ruleName.image);
+    if (result == null) {
+      result = new CompositeRule();
+      ruleDefMap.put(ruleName.image, result);
+    }
+    return result;
+  }
+  |
+  (
+	< NOT > < L_PAREN >
+	(
+      rule = ruleRef(ruleDefMap)
+      {
+        compositeRule.addRule(rule);
+      }
+    )* < R_PAREN >
+  )
+  {
+    return new NotRule(compositeRule);
+  }
+}
+
+int operator() :
+{
+}
+{
+  < EQ >
+  {
+    return SimpleRule.EQUALS;
+  }
+  |
+  < NEQ >
+  {
+    return SimpleRule.NOT_EQUALS;
+  }
+  |
+  < ISA >
+  {
+    return SimpleRule.IS_A;
+  }
+  |
+  < NISA >
+  {
+    return SimpleRule.NOT_IS_A;
+  }
+  |
+  < SW >
+  {
+    return SimpleRule.STARTS_WITH;
+  }
+  |
+  < NSW >
+  {
+    return SimpleRule.NOT_STARTS_WITH;
+  }
+}

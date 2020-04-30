@@ -1,0 +1,299 @@
+<project name="cleartrack" default="jar">
+
+	<!-- The following 3 properties can be probably removed (to be double-checked): -->
+	<property name="cname" value="pac.test.util.LangTesterTest" />
+	<property name="tmethods" value="wildCardTest," />
+	<property name="showoutput" value="true" />
+
+	<property name="skipclassparser.dir"
+		value="src/pac/agent/hierarchy" />
+	<property environment="env" />
+
+	<!-- setup the classpath for instrumentation -->
+	<path id="classpath">
+		<fileset dir="lib">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<!-- setup the classpath for the unit tests -->
+	<path id="classpath-test">
+		<fileset dir="lib">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="lib-test">
+			<include name="**/*.jar" />
+		</fileset>
+	</path>
+
+	<!-- setup the bootstrap classpath -->
+	<path id="classpath-boot">
+		<fileset dir="${user.home}/.cleartrack/jre">
+			<include name="**/*.jar" />
+			<include name="cleartrack.jar" />
+		</fileset>
+	</path>
+
+	<target name="clean" description="remove all generated files">
+		<delete dir="${user.home}/.cleartrack" />
+		<delete dir="bin" />
+		<delete dir="test-new" />
+		<delete dir="src-boot" />
+		<delete dir="src-opts" />
+		<delete file="build.dot" />
+		<delete file="build.png" />
+		<delete file="inst.err" />
+		<delete file="inst.out" />
+		<delete file="${skipclassparser.dir}/ParseException.java" />
+		<delete file="${skipclassparser.dir}/SimpleCharStream.java" />
+		<delete file="${skipclassparser.dir}/SkippedClassesParser.java" />
+		<delete
+			file="${skipclassparser.dir}/SkippedClassesParserConstants.java" />
+		<delete
+			file="${skipclassparser.dir}/SkippedClassesParserTokenManager.java" />
+		<delete file="${skipclassparser.dir}/Token.java" />
+		<delete file="${skipclassparser.dir}/TokenMgrError.java" />
+	</target>
+
+	<taskdef resource="com/igormaznitsa/jcp/ant/tasks.properties"
+		classpath="lib-test/jcp-5.3.1.jar" />
+
+	<target name="javacc" depends="clean"
+		description="compile parser generated class files">
+		<javacc target="${skipclassparser.dir}/SkippedClassesParser.jj"
+			outputdirectory="${skipclassparser.dir}" javacchome="javacc-5.0" />
+	</target>
+
+	<target name="bootstrap-preprocess" depends="javacc"
+		description="run java preprocessor prior to bootstrapping">
+		<preprocess source="test" destination="test-new"
+			verbose="false">
+			<global name="remove" value="true" />
+		</preprocess>
+
+		<!-- bootstrapping is now handled through the preprocessing mechanism -->
+		<preprocess source="src" destination="src-boot"
+			verbose="false">
+			<global name="chartaint" value="false" />
+			<global name="bootstrap" value="true" />
+			<global name="log_overflow" value="false" />
+			<global name="os_type" value="${os.name}" />
+		</preprocess>
+	</target>
+
+	<target name="bootstrap" depends="bootstrap-preprocess"
+		description="bootstrap cleartrack with instrumented jdk">
+		<!-- create output directory if it does not exist -->
+		<mkdir dir="bin" />
+
+		<!-- compile instrumentation classes -->
+		<javac srcdir="src-boot" destdir="bin" debug="true"
+			includes="pac/agent/CleartrackMain.java, pac/util/Dummy.java">
+			<classpath refid="classpath" />
+		</javac>
+
+		<!-- build bootstrap cleartrack.jar (i.e. without pac.inst.taint) -->
+		<jar destfile="cleartrack.jar" manifest="src/META-INF/MANIFEST.MF">
+			<fileset dir="src">
+				<include name="META-INF/**/*" />
+				<exclude name="META-INF/MANIFEST.MF" />
+			</fileset>
+			<fileset dir="bin">
+				<include name="**/*" />
+
+				<!-- don't jar the test classes -->
+				<exclude name="pac/test" />
+				<exclude name="pac/test/**/*" />
+				<exclude name="java/**/*" />
+			</fileset>
+		</jar>
+
+		<!-- build the pseudo dangerous classes, since they will be needed on the 
+			bootclasspath. -->
+		<javac srcdir="dangerous" destdir="bin">
+			<classpath path="cleartrack.jar" />
+		</javac>
+		<jar destfile="lib/dangerous.jar">
+			<fileset dir="bin">
+				<include name="java/**/*" />
+			</fileset>
+		</jar>
+
+		<!-- instrument jdk and junit tests -->
+		<echo>Bootstrapping instrumented JDK (this may take a minute)...
+		</echo>
+		<java jar="cleartrack.jar" maxmemory="4g" fork="true"
+			output="inst.out" error="inst.err" failonerror="true">
+			<classpath refid="classpath" />
+			<jvmarg value="-Xbootclasspath/a:lib/dangerous.jar" />
+		</java>
+
+		<!-- cleanup jars that are no longer needed -->
+		<delete dir="lib/dangerous.jar" />
+	</target>
+
+	<target name="build-preprocess" depends="bootstrap"
+		description="run java preprocessor prior to building">
+		<preprocess source="src" destination="src-opts"
+			verbose="false">
+			<global name="chartaint" value="false" />
+			<global name="bootstrap" value="false" />
+			<global name="log_overflow" value="false" />
+			<global name="os_type" value="${os.name}" />
+		</preprocess>
+	</target>
+
+	<!-- build all instrumentation classes against instrumented JDK -->
+	<target name="build" depends="build-preprocess"
+		description="compile cleartrack and junit tests">
+		<echo>Building instrumentation under the instrumented JDK...</echo>
+
+		<!-- need to rebuild starting with a clean bin -->
+		<delete dir="bin" />
+		<mkdir dir="bin" />
+
+		<!-- compile instrumentation classes -->
+		<javac srcdir="src-opts" destdir="bin" debug="true"
+			bootclasspathref="classpath-boot">
+			<classpath refid="classpath" />
+		</javac>
+
+		<!-- compile instrumentation unit tests -->
+		<javac srcdir="test-new" destdir="bin" debug="true">
+			<classpath refid="classpath-test" />
+		</javac>
+	</target>
+
+	<!-- build the instrumentation jar -->
+	<target name="jar" depends="build"
+		description="package the cleartrack jar file, but do not instrument">
+		<jar destfile="cleartrack.jar" manifest="src/META-INF/MANIFEST.MF">
+			<fileset dir="src">
+				<include name="META-INF/**/*" />
+				<exclude name="META-INF/MANIFEST.MF" />
+			</fileset>
+			<fileset dir="bin">
+				<include name="**/*" />
+
+				<!-- don't jar the test classes -->
+				<exclude name="pac/test" />
+				<exclude name="pac/test/**/*" />
+
+				<!-- don't include psuedo-dangerous classes -->
+				<exclude name="java/**/*" />
+			</fileset>
+		</jar>
+
+		<!-- build the cleartrack method wrapper inliner with the dangerous classes 
+			so that they will be available at instrumentation time. -->
+		<javac srcdir="dangerous" destdir="bin">
+			<classpath path="cleartrack.jar" />
+		</javac>
+		<jar destfile="lib/inliner.jar"
+			manifest="dangerous/META-INF/MANIFEST.MF">
+			<fileset dir="bin">
+				<include name="pac/agent/CleartrackMethodInliner*.class" />
+				<include name="java/**/*" />
+			</fileset>
+		</jar>
+
+		<!-- remove the bootstrap JDK since it is not completely instrumented -->
+		<delete dir="${user.home}/.cleartrack" />
+	</target>
+
+	<target name="test" depends="jar" description="execute confinement junit tests">
+		<echo>********************************************************************************</echo>
+		<echo>CONFINEMENT TESTS</echo>
+		<echo>********************************************************************************</echo>
+		<echo>IF ANY SERVERS SHOW UP IN THE FORM &#36;{XXXX}, THEN THE
+			ENVIRONMENT VARIABLE
+			FOR THAT SERVER HAS NOT BEEN SET AND THEREFORE WILL NOT BE TESTED:
+		</echo>
+		<echo message="    MSSQL_SERVER = ${env.MSSQL_SERVER}" />
+		<echo message="    MYSQL_SERVER = ${env.MYSQL_SERVER}" />
+		<echo message="     PSQL_SERVER = ${env.PSQL_SERVER}" />
+		<echo message="   XQUERY_SERVER = ${env.XQUERY_SERVER}" />
+		<echo>********************************************************************************</echo>
+		<echo>Rebuilding instrumented JDK, application, and application
+			libraries (this may take a minute)...</echo>
+		<delete dir="${user.home}/.cleartrack" />
+		<java jar="cleartrack.jar" fork="true" maxmemory="4g"
+			output="inst.out" error="inst.err" failonerror="true">
+			<jvmarg value="-javaagent:lib/inliner.jar" />
+			<jvmarg
+				value="-Xbootclasspath/a:lib/inliner.jar:lib/asm-debug-all-5.0.3.jar" />
+			<arg value="--threads" />
+			<arg value="5" />
+			<!-- <jvmarg value="-Xdebug"/> <jvmarg value="-Xrunjdwp:transport=dt_socket,address=4143,server=y,suspend=y"/> -->
+			<arg value="--exts" />
+			<!-- necessary or MS SQL server connection fails -->
+			<arg value="&quot;&quot;" />
+			<arg value="lib-test" />
+			<arg value="bin/pac/test" />
+		</java>
+
+		<exec executable="/bin/bash" failonerror="true">
+			<arg value="junit.sh" />
+			<arg value="pac.test.*" />
+		</exec>
+
+		<!-- Warn again if there were no server variables set -->
+		<condition property="no-dbs">
+			<not>
+				<or>
+					<isset property="env.MSSQL_SERVER" />
+					<isset property="env.MYSQL_SERVER" />
+					<isset property="env.PSQL_SERVER" />
+					<isset property="env.XQUERY_SERVER" />
+				</or>
+			</not>
+		</condition>
+		<antcall target="warn-if-no-dbs">
+		</antcall>
+	</target>
+
+	<!-- Warn again if there were no server variables set -->
+	<target name="warn-if-no-dbs" if="no-dbs">
+		<echo>!WARNING!</echo>
+		<echo>No DB server environment variables were set,</echo>
+		<echo>so injection tests show as passed when they were not executed.</echo>
+		<echo>For details see output at the beginning of the &quot;test&quot; target.</echo>
+		<echo>!WARNING!</echo>
+	</target>
+
+	<target name="reports"
+		description="generates html reports of test results">
+		<junitreport todir="./reports">
+			<fileset dir="./reports">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report format="frames" todir="./reports/html" />
+		</junitreport>
+	</target>
+
+	<target name="ant2dot"
+		description="constructs a dependency graph of ant targets">
+		<!-- STEP 1: set some ANT properties -->
+		<property name="build.xml" value="${ant.file}" />
+		<!-- ie. this ANT script -->
+		<property name="ant2dot.xsl" value="${basedir}/ant2dot.xsl" />
+		<!-- the stylesheet -->
+		<basename property="basename.script" file="${build.xml}"
+			suffix=".xml" />
+		<property name="dot.file" value="${basename.script}.dot" />
+		<property name="png.file" value="${basename.script}.png" />
+
+		<!-- STEP 2: generate the DOT file ("build.dot" or something similar) -->
+		<xslt in="${build.xml}" out="${dot.file}" style="${ant2dot.xsl}"
+			force="true" />
+
+		<!-- STEP 3: generate the PNG file ("build.png" or something similar) -->
+		<exec executable="dot" dir="${basedir}">
+			<arg value="-Tpng" />
+			<arg value="${dot.file}" />
+			<arg value="-o" />
+			<arg value="${png.file}" />
+		</exec>
+	</target>
+
+</project>

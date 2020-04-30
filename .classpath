@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="dangerous"/>
+	<classpathentry kind="src" path="test"/>
+	<classpathentry kind="lib" path="lib/antlr-3.4-runtime.jar"/>
+	<classpathentry kind="lib" path="lib/commons-cli-1.2.jar" sourcepath="lib-src/commons-cli-1.2-sources.jar"/>
+	<classpathentry kind="lib" path="lib-test/hibernate/antlr-2.7.6.jar"/>
+	<classpathentry kind="lib" path="lib-test/hibernate/commons-collections-3.1.jar"/>
+	<classpathentry kind="lib" path="lib-test/hibernate/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib-test/hibernate/hibernate3.jar"/>
+	<classpathentry kind="lib" path="lib-test/hibernate/javassist-3.12.0.GA.jar"/>
+	<classpathentry kind="lib" path="lib-test/esapi-2.0.1.jar"/>
+	<classpathentry kind="lib" path="lib-test/h2-1.2.144.jar"/>
+	<classpathentry kind="lib" path="lib-test/jackson-all-1.9.1.jar"/>
+	<classpathentry kind="lib" path="lib-test/JarBean.jar"/>
+	<classpathentry kind="lib" path="lib-test/mysql-connector-java-5.1.13-bin.jar"/>
+	<classpathentry kind="lib" path="lib-test/postgresql-9.1-901.jdbc4.jar"/>
+	<classpathentry kind="lib" path="lib-test/servlet-api.jar"/>
+	<classpathentry kind="lib" path="lib-test/sqljdbc4.jar"/>
+	<classpathentry kind="lib" path="lib-test/selenium/selenium-java-2.15.0.jar"/>
+	<classpathentry kind="lib" path="lib-test/junit-4.12-SNAPSHOT.jar"/>
+	<classpathentry kind="lib" path="lib/dom4j-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/gson-1.4.jar"/>
+	<classpathentry kind="lib" path="lib/guava-11.0.2.jar"/>
+	<classpathentry kind="lib" path="lib/javassist-3.12.1.GA.jar"/>
+	<classpathentry kind="lib" path="lib/jsr305-1.3.9.jar"/>
+	<classpathentry kind="lib" path="lib/plume.jar"/>
+	<classpathentry kind="lib" path="lib/reflections-0.9.8.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-simple-1.6.1.jar"/>
+	<classpathentry kind="lib" path="lib/xml-apis-1.0.b2.jar"/>
+	<classpathentry kind="lib" path="lib-test/guava-r08.jar"/>
+	<classpathentry kind="lib" path="lib-test/hibernate/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8_instr"/>
+	<classpathentry kind="lib" path="lib/asm-debug-all-5.0.3.jar" sourcepath="lib-src/asm-5.0.3-sources.jar"/>
+	<classpathentry kind="lib" path="lib-test/sedna-xqj-beta-5.jar"/>
+	<classpathentry kind="lib" path="lib/glazedlists_java15-1.9.0.jar"/>
+	<classpathentry kind="lib" path="lib/verifier.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
