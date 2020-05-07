@@ -90,6 +90,7 @@
 		<javac srcdir="src-boot" destdir="bin" debug="true"
 			includes="pac/agent/CleartrackMain.java, pac/util/Dummy.java">
 			<classpath refid="classpath" />
+			<compilerarg value="-XDignore.symbol.file=true" />
 		</javac>
 
 		<!-- build bootstrap cleartrack.jar (i.e. without pac.inst.taint) -->

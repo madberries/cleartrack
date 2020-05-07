@@ -100,7 +100,7 @@ JNIEXPORT jobject JNICALL Java_pac_util_FileStat_fstat0
 JNIEXPORT jobject JNICALL Java_pac_util_FileStat_lstat0
   (JNIEnv *env, jclass c, jstring filename) {
  
-  const jbyte* filenameChars = (*env)->GetStringUTFChars(env, filename, NULL);
+  const char* filenameChars = (*env)->GetStringUTFChars(env, filename, NULL);
  
   // make fstat system call, and throw an IOException if there is an error
   struct stat fileStat;
@@ -125,7 +125,7 @@ JNIEXPORT jobject JNICALL Java_pac_util_FileStat_lstat0
 JNIEXPORT jobject JNICALL Java_pac_util_FileStat_stat0
   (JNIEnv *env, jclass c, jstring filename) {
  
-  const jbyte* filenameChars = (*env)->GetStringUTFChars(env, filename, NULL);
+  const char* filenameChars = (*env)->GetStringUTFChars(env, filename, NULL);
  
   // make fstat system call, and throw an IOException if there is an error
   struct stat fileStat;
@@ -169,7 +169,7 @@ JNIEXPORT jstring JNICALL Java_pac_util_FileStat_getMimetype0
   }
     
   // determine the mimetype from the filename
-  const jbyte* filenameChars = (*env)->GetStringUTFChars(env, filename, NULL);
+  const char* filenameChars = (*env)->GetStringUTFChars(env, filename, NULL);
   const char* magic_full = magic_file(magic_cookie, filenameChars);
     
   // pick out the mimetype...
@@ -193,7 +193,7 @@ JNIEXPORT jstring JNICALL Java_pac_util_FileStat_realpath0
   (JNIEnv *env, jclass c, jstring filename) {
 
   // convert filename String to char*
-  const jbyte* filenameChars = (*env)->GetStringUTFChars(env, filename, NULL);
+  const char* filenameChars = (*env)->GetStringUTFChars(env, filename, NULL);
 
   // get the realpath
   char* realpathChars = realpath(filenameChars, NULL);

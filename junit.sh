@@ -50,12 +50,22 @@ then
 fi
 
 # Some CPUs throttle the clock speed dynamically (based on CPU temps), for example
-# the Macbook Pro.  Run coolcpu to ensure we have low enough temps for consistent
-# benchmark results, presuming this script exists.
-which coolcpu >/dev/null
+# the Macbook Pro.  Run osx-cpu-temp to ensure we have low enough temps to get
+# consistent benchmark results (presuming this command is installed).
+which osx-cpu-temp &>/dev/null
 if [[ $? == 0 ]]; then
-  echo "Waiting for CPU to cool down..."
-  coolcpu 51.0  # Cool down to 51.0 degrees celsius
+   echo "Waiting for CPU to cool down..."
+   max_temp="51.0"
+   unset cpu_temp
+   temp_chk=1
+   # Loop until cpu temp is < 51.0 celsius
+   while [[ $temp_chk == 1 ]]; do
+      if [[ ! -z $cpu_temp ]]; then
+         sleep 1
+      fi
+      cpu_temp=$(osx-cpu-temp -C | sed -e 's/°C$//g')
+      temp_chk=$(echo "$cpu_temp > $max_temp" | bc)
+   done
 fi
 
 # run the tests
