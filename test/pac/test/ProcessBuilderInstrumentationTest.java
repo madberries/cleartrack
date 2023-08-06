@@ -42,7 +42,7 @@ public class ProcessBuilderInstrumentationTest {
                     procBuilder.start(); // IOException
                     cmd_list = procBuilder.command();
                 } catch (IOException ex) {
-                    Assert.fail("Unexpected IOExceptioin " + ex.getMessage());
+                    Assert.fail("Unexpected IOException " + ex.getMessage());
                 }
 
             } catch (RuntimeException ex) {
@@ -98,7 +98,7 @@ public class ProcessBuilderInstrumentationTest {
             pb.start(); // IOException
             cmd_list = pb.command();
         } catch (IOException ex) {
-            Assert.fail("Unexpected IOExceptioin " + ex.getMessage());
+            Assert.fail("Unexpected IOException " + ex.getMessage());
         }
         Assert.assertTrue("ProcessBuilder.start() failed to replace ../file __/file",
                           "__/file".equals(cmd_list.get(2)));
@@ -153,7 +153,7 @@ public class ProcessBuilderInstrumentationTest {
         try {
             pb_2.start(); // IOExcetpion
         } catch (IOException ex) {
-            Assert.fail("Unexpected IOExceptioin " + ex.getMessage());
+            Assert.fail("Unexpected IOException " + ex.getMessage());
         } catch (RuntimeException ex) {
             catchEx = true;
         }
@@ -185,7 +185,7 @@ public class ProcessBuilderInstrumentationTest {
             map_1.put("abc", "ls *"); // "abc" and "ls *" will both tainted
             pb_1.start(); // IOException
         } catch (IOException ex) {
-            Assert.fail("Unexpected IOExceptioin " + ex.getMessage());
+            Assert.fail("Unexpected IOException " + ex.getMessage());
         } catch (RuntimeException ex) {
             // unable to tokenize entirely tainted data, so treat this as an attack
             catchEx = true;
@@ -205,7 +205,7 @@ public class ProcessBuilderInstrumentationTest {
         try {
             pb_2.start(); // IOException
         } catch (IOException ex) {
-            Assert.fail("Unexpected IOExceptioin " + ex.getMessage());
+            Assert.fail("Unexpected IOException " + ex.getMessage());
         } catch (RuntimeException ex) {
             Assert.fail("Unexpected RuntimeException");
         }
@@ -231,7 +231,7 @@ public class ProcessBuilderInstrumentationTest {
             // check filename_check failed to match: ";"
             catchEx = true;
         } catch (IOException ex) {
-            Assert.fail("Unexpected IOExceptioin " + ex.getMessage());
+            Assert.fail("Unexpected IOException " + ex.getMessage());
         }
         Assert.assertTrue("ProcessBuilder.starg() failed to catch untrusted attack semicolon", catchEx);
         cmdRay.remove(2);
@@ -256,7 +256,7 @@ public class ProcessBuilderInstrumentationTest {
                 // "pac is located in an untrusted $PATH directory: bin"
                 catchEx = true;
             } catch (IOException ex) {
-                Assert.fail("Unexpected IOExceptioin " + ex.getMessage());
+                Assert.fail("Unexpected IOException " + ex.getMessage());
             }
             Assert.assertTrue("ProcessBuilder.start() failed to get expected Exception from dangerous \"bin\" path in $PATH",
                               catchEx);
@@ -280,7 +280,7 @@ public class ProcessBuilderInstrumentationTest {
         } catch (RuntimeException ex) {
             catchEx = true;
         } catch (IOException ex) {
-            Assert.fail("Unexpected IOExceptioin " + ex.getMessage());
+            Assert.fail("Unexpected IOException " + ex.getMessage());
         }
 
         Assert.assertTrue("ProcessBuilder(List<String) did not change shell from csh to /bin/csh",

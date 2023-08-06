@@ -131,7 +131,7 @@ public class CleartrackMain {
             // The ~/.cleartrack directory must exist at this point
             File cleartrackDir = new File(System.getProperty("user.home"), ".cleartrack");
             File propertyFile = new File(cleartrackDir, "properties.goal");
-            try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(propertyFile));) {
+            try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(propertyFile))) {
                 out.writeObject(System.getProperties());
             } catch (IOException e) {
                 Ansi.error("unable to serialize java properties due to exception: %s", null, e);
@@ -206,6 +206,8 @@ public class CleartrackMain {
         } else {
             extPath = DEFAULT_EXT_DIRS;
         }
+        if (extPath == null)
+            return null;
         String extPaths[] = extPath.split(SEPARATOR);
         File extDirs[] = new File[extPaths.length];
         for (int i = 0; i < extPaths.length; i++) {

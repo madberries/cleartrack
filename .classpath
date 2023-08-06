@@ -32,7 +32,7 @@
 	<classpathentry kind="lib" path="lib/xml-apis-1.0.b2.jar"/>
 	<classpathentry kind="lib" path="lib-test/guava-r08.jar"/>
 	<classpathentry kind="lib" path="lib-test/hibernate/hibernate-jpa-2.0-api-1.0.1.Final.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jdk1.8_instr"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/java-8-openjdk-instr"/>
 	<classpathentry kind="lib" path="lib/asm-debug-all-5.0.3.jar" sourcepath="lib-src/asm-5.0.3-sources.jar"/>
 	<classpathentry kind="lib" path="lib-test/sedna-xqj-beta-5.jar"/>
 	<classpathentry kind="lib" path="lib/glazedlists_java15-1.9.0.jar"/>

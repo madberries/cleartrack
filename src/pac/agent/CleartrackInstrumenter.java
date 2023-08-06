@@ -352,13 +352,10 @@ public abstract class CleartrackInstrumenter {
     }
 
     private void instrumentClassFile(final File file, boolean inJdk, boolean preProcess) {
-        FileInputStream fis = null;
-        FileOutputStream fos = null;
-        try {
-            fis = new FileInputStream(file);
-            File outFile = new File(outputDir, file.getPath());
-            outFile.getParentFile().mkdirs();
-            fos = new FileOutputStream(outFile);
+        File outFile = new File(outputDir, file.getPath());
+        outFile.getParentFile().mkdirs();
+        try (FileInputStream fis = new FileInputStream(file);
+            FileOutputStream fos = new FileOutputStream(outFile);) {
             instrumentClass(null, fis, fos, false, false, preProcess);
             if (isFlagSet(OVERWRITE) && !inJdk) {
                 renameOriginals.put(file, new File(file.getPath() + "-saved"));
@@ -368,19 +365,6 @@ public abstract class CleartrackInstrumenter {
                 Ansi.trans("transformed %s\n", true, file.getPath());
         } catch (IOException e) {
             Ansi.warn("unable to instrument classfile %s: %s", null, file.getPath(), e);
-        } finally {
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                }
-            }
-            if (fos != null) {
-                try {
-                    fos.close();
-                } catch (IOException e) {
-                }
-            }
         }
     }
 
@@ -426,24 +410,26 @@ public abstract class CleartrackInstrumenter {
             return;
         }
 
-        // create jar object from file
-        JarFile jar = null;
-        FileInputStream fis = null;
-        OutputStream out = null;
-        try {
-
-            jar = new JarFile(file);
-
+        int total = 0;
+        try (JarFile jar = new JarFile(file)) {
             // count the number of entries in this jar...
-            float total = 0;
-            for (Enumeration<JarEntry> entries = jar.entries(); entries.hasMoreElements(); total++, entries
-                    .nextElement())
-                ;
+            for (Enumeration<JarEntry> entries = jar.entries(); entries.hasMoreElements(); entries
+                    .nextElement()) {
+                total++;
+            }
+        } catch (IOException e) {
+            Ansi.warn("unable to open jarfile: %s: %s", null, file, e);
+            return;
+        }
 
-            if (!preProcess)
-                out = new FileOutputStream(outJar);
-            fis = new FileInputStream(file);
-            instrumentJarFile(file, fis, out, total, inJdk, isCompatibility, preProcess, fileType);
+        try (FileInputStream in = new FileInputStream(file)) {
+            if (!preProcess) {
+                try (FileOutputStream out = new FileOutputStream(outJar)) {
+                    instrumentJarFile(file, in, out, total, inJdk, isCompatibility, preProcess, fileType);
+                }
+            } else {
+              instrumentJarFile(file, in, null, total, inJdk, isCompatibility, preProcess, fileType);
+            }
             if (isFlagSet(OVERWRITE) && !inJdk) {
                 renameOriginals.put(file, new File(file.getPath() + "-saved"));
                 renameTransformed.put(outJar, file);
@@ -454,33 +440,14 @@ public abstract class CleartrackInstrumenter {
             if (!preProcess && !hideProgress) {
                 Ansi.trans("\rtransformed %s: %s [%%100] \n", true, fileType, file);
             }
-            try {
-                if (jar != null) {
-                    jar.close();
-                }
-            } catch (IOException e) {
-            }
-            if (fis != null) {
-                try {
-                    fis.close();
-                } catch (IOException e) {
-                }
-            }
-            if (out != null) {
-                try {
-                    out.close();
-                } catch (IOException e) {
-                }
-            }
         }
     }
 
-    private void instrumentJarFile(File file, InputStream in, OutputStream out, float total, boolean inJdk,
+    private void instrumentJarFile(File file, InputStream in, OutputStream out, int total, boolean inJdk,
                                    boolean isCompatibility, boolean preProcess, FileType fileType)
             throws IOException {
-        JarInputStream jarIn = new JarInputStream(in);
         JarOutputStream jarOut = null;
-        try {
+        try (JarInputStream jarIn = new JarInputStream(in)) {
             if (!preProcess) {
                 Manifest manifest = jarIn.getManifest();
                 if (manifest != null)
@@ -494,8 +461,8 @@ public abstract class CleartrackInstrumenter {
                 }
             }
 
+            int processed = 1;
             Set<String> entries = new HashSet<String>();
-            float processed = 1;
             for (JarEntry jarEntry = jarIn.getNextJarEntry(); jarEntry != null; processed++, jarEntry = jarIn
                     .getNextJarEntry()) {
                 String entryName = jarEntry.getName();
@@ -531,9 +498,9 @@ public abstract class CleartrackInstrumenter {
                         }
                         break;
                     case JAR:
-                        // treat as a compatibility jar if either the main jar or nest jar
-                        // is a compatibility jar (this fixes cases where a compatibility
-                        // jar is buried in a war file).
+                        // treat as a compatibility jar if either the main jar or nested jar
+                        // is a compatibility jar (this fixes cases where a compatibility jar
+                        // is buried in a war file).
                         boolean compatibleJar = isCompatibility || isCompatibilityJar(new File(entryName).getName());
                         if (preProcess) {
                             instrumentJarFile(file, jarIn, null, -1, inJdk, compatibleJar, preProcess, entryType);
@@ -563,15 +530,13 @@ public abstract class CleartrackInstrumenter {
                     System.exit(1);
                 }
             }
-
+        } finally {
             try {
                 if (!preProcess)
                     jarOut.close();
             } catch (IOException e) {
             }
-        } finally {
-            if (total >= 0)
-                jarIn.close();
+            
             if (!preProcess && hideProgress)
                 Ansi.trans("transformed %s: %s\n", true, fileType, file);
         }
