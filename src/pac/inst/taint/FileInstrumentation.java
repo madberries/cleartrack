@@ -16,6 +16,7 @@ import pac.inst.InstrumentationLocation;
 import pac.inst.InstrumentationMethod;
 import pac.inst.InvocationType;
 import pac.util.FileStat;
+import pac.util.OS;
 import pac.util.Ret;
 import pac.util.TaintUtils;
 import pac.util.TaintValues;
@@ -169,7 +170,13 @@ public final class FileInstrumentation {
   @InstrumentationMethod
   public static final long lastModified(File file, Ret ret) {
     try {
-      return timeOfCheck(file).lastModified();
+      // TODO: First of all, we assume the else case is Linux as we have not
+      //       tested this on Windows, for example.  Also, it's unclear why the
+      //       two stat formats are necessarily different here, but maybe there
+      //       is some difference in syscalls between the two OSes??
+      if (OS.get().isMac())
+        return timeOfCheck(file).lastModified();
+      return timeOfCheck(file).lastModifiedPrecise();
     } catch (IOException e) {
       return 0;
     }

@@ -23,6 +23,7 @@ import pac.inst.InstrumentationMethod;
 import pac.inst.InvocationType;
 import pac.util.Ret;
 import pac.util.FileStat;
+import pac.util.OS;
 
 @InstrumentationClass("java/nio/file/Files")
 public class FilesInstrumentation {
@@ -42,9 +43,16 @@ public class FilesInstrumentation {
   public static FileTime getLastModifiedTime(Path path, LinkOption[] options, Ret ret)
       throws IOException {
     boolean followLinks = shouldFollowLinks(options);
-    long microsecs =
-        FileInstrumentation.timeOfCheck(path.toFile(), !followLinks, false).lastModifiedMicro();
-    return FileTime.from(microsecs, TimeUnit.MICROSECONDS);
+    FileStat stat = FileInstrumentation.timeOfCheck(path.toFile(), !followLinks, false);
+    // TODO: First of all, we assume the else case is Linux as we have not
+    //       tested this on Windows, for example.  Also, it's unclear why the
+    //       two stat formats are necessarily different here, but maybe there
+    //       is some difference in syscalls between the two OSes??
+    if (OS.get().isMac()) {
+      return FileTime.from(stat.lastModified(), TimeUnit.MILLISECONDS);
+    } else {
+      return FileTime.from(stat.lastModifiedMicro(), TimeUnit.MICROSECONDS);
+    }
   }
 
   @InstrumentationMethod(invocationType = InvocationType.STATIC,
@@ -191,12 +199,19 @@ public class FilesInstrumentation {
       throws NoSuchMethodException, SecurityException {
     if (value instanceof FileTime) {
       long millis = ((FileTime) value).toMillis();
+      // TODO: First of all, we assume the else case is Linux as we have not
+      //       tested this on Windows, for example.  Also, it's unclear why the
+      //       two stat formats are necessarily different here, but maybe there
+      //       is some difference in syscalls between the two OSes??
       if (key.equals("ctime") || key.equals("creationTime")) {
-        checkValue(method, key, millis, stat.creationTimePrecise());
+        checkValue(method, key, millis,
+            OS.get().isMac() ? stat.creationTime() : stat.creationTimePrecise());
       } else if (key.equals("lastModifiedTime")) {
-        checkValue(method, key, millis, stat.lastModifiedPrecise());
+        checkValue(method, key, millis,
+            OS.get().isMac() ? stat.lastModified() : stat.lastModifiedPrecise());
       } else if (key.equals("lastAccessTime")) {
-        checkValue(method, key, millis, stat.lastAccessedPrecise());
+        checkValue(method, key, millis,
+            OS.get().isMac() ? stat.lastAccessed() : stat.lastAccessedPrecise());
       }
     } else if (value instanceof Set) {
       if (key.equals("permissions")) {
