@@ -9,11 +9,11 @@ import pac.util.TaintUtils;
 @InstrumentationClass(value = "java/lang/reflect/Member", isInterface = true)
 public class MemberInstrumentation {
 
-    @InstrumentationMethod(canExtend = true)
-    public static final String getName(Member member) {
-        String str = member.getName();
-        TaintUtils.trust(str);
-        return str;
-    }
+  @InstrumentationMethod(canExtend = true)
+  public static final String getName(Member member) {
+    String str = member.getName();
+    TaintUtils.trust(str);
+    return str;
+  }
 
 }

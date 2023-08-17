@@ -12,11 +12,12 @@ import pac.util.TaintUtils;
 @InstrumentationClass("java/net/URLEncoder")
 public final class URLEncoderInstrumentation {
 
-    @InstrumentationMethod(invocationType = InvocationType.STATIC)
-    public static final String encode(String str, String encoding, Ret ret) throws UnsupportedEncodingException {
-        String s = URLEncoder.encode(str, encoding, ret);
-        s = TaintUtils.urlEncodedTaint(s, str); // unused for non-chartaint
-        return s;
-    }
+  @InstrumentationMethod(invocationType = InvocationType.STATIC)
+  public static final String encode(String str, String encoding, Ret ret)
+      throws UnsupportedEncodingException {
+    String s = URLEncoder.encode(str, encoding, ret);
+    s = TaintUtils.urlEncodedTaint(s, str); // Unused for non-chartaint.
+    return s;
+  }
 
 }

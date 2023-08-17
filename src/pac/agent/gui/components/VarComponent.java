@@ -14,34 +14,34 @@ import pac.org.objectweb.asm.tree.VarInsnNode;
  * @author jeikenberry
  */
 public class VarComponent extends JTextField implements ActionListener, InstructionComponent {
-    private static final long serialVersionUID = -4676636642093360636L;
+  private static final long serialVersionUID = -4676636642093360636L;
 
-    private VarInsnNode instruction;
+  private VarInsnNode instruction;
 
-    public VarComponent() {
-        super();
+  public VarComponent() {
+    super();
+  }
+
+  @Override
+  public void setInstruction(AbstractInsnNode instruction) {
+    this.instruction = (VarInsnNode) instruction;
+    if (instruction != null) {
+      setText("" + this.instruction.var);
     }
+    invalidate();
+    revalidate();
+    repaint();
+  }
 
-    @Override
-    public void setInstruction(AbstractInsnNode instruction) {
-        this.instruction = (VarInsnNode) instruction;
-        if (instruction != null) {
-            setText("" + this.instruction.var);
-        }
-        invalidate();
-        revalidate();
-        repaint();
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    String t = getText();
+    if (instruction != null && t != null) {
+      try {
+        instruction.var = Integer.parseInt(t.trim());
+      } catch (NumberFormatException ex) {
+
+      }
     }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String t = getText();
-        if (instruction != null && t != null) {
-            try {
-                instruction.var = Integer.parseInt(t.trim());
-            } catch (NumberFormatException ex) {
-
-            }
-        }
-    }
+  }
 }

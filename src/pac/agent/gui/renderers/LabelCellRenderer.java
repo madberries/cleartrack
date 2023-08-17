@@ -15,13 +15,13 @@ import pac.org.objectweb.asm.tree.LabelNode;
  * @author jeikenberry
  */
 public class LabelCellRenderer implements ListCellRenderer<LabelNode> {
-    private JLabel label = new JLabel();
+  private JLabel label = new JLabel();
 
-    @Override
-    public Component getListCellRendererComponent(JList<? extends LabelNode> list, LabelNode value, int index,
-                                                  boolean isSelected, boolean cellHasFocus) {
-        label.setText(InstructionCellEditor.getLabelName(value));
-        label.setForeground(InstructionCellEditor.getLabelColor(value));
-        return label;
-    }
+  @Override
+  public Component getListCellRendererComponent(JList<? extends LabelNode> list, LabelNode value,
+      int index, boolean isSelected, boolean cellHasFocus) {
+    label.setText(InstructionCellEditor.getLabelName(value));
+    label.setForeground(InstructionCellEditor.getLabelColor(value));
+    return label;
+  }
 }

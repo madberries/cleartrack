@@ -16,46 +16,47 @@ import pac.org.objectweb.asm.tree.LabelNode;
  * 
  * @author jeikenberry
  */
-public class JumpComponent extends JComboBox<LabelNode> implements ActionListener, InstructionComponent {
-    private static final long serialVersionUID = -7500449196156103449L;
+public class JumpComponent extends JComboBox<LabelNode>
+    implements ActionListener, InstructionComponent {
+  private static final long serialVersionUID = -7500449196156103449L;
 
-    private JumpInsnNode instruction;
+  private JumpInsnNode instruction;
 
-    public JumpComponent() {
-        super();
-        setRenderer(new LabelCellRenderer());
-        setMaximumRowCount(15);
+  public JumpComponent() {
+    super();
+    setRenderer(new LabelCellRenderer());
+    setMaximumRowCount(15);
+  }
+
+  @Override
+  public void setInstruction(AbstractInsnNode instruction) {
+    this.instruction = (JumpInsnNode) instruction;
+    if (instruction != null) {
+      String labelName = InstructionCellEditor.getLabelName(this.instruction.label);
+      if (labelName != null) {
+        setSelectedItem(this.instruction.label);
+      }
     }
+    invalidate();
+    revalidate();
+    repaint();
+  }
 
-    @Override
-    public void setInstruction(AbstractInsnNode instruction) {
-        this.instruction = (JumpInsnNode) instruction;
-        if (instruction != null) {
-            String labelName = InstructionCellEditor.getLabelName(this.instruction.label);
-            if (labelName != null) {
-                setSelectedItem(this.instruction.label);
-            }
-        }
-        invalidate();
-        revalidate();
-        repaint();
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    LabelNode selectedLabel = (LabelNode) getSelectedItem();
+    if (instruction != null && selectedLabel != null) {
+      instruction.label = selectedLabel;
     }
+  }
 
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        LabelNode selectedLabel = (LabelNode) getSelectedItem();
-        if (instruction != null && selectedLabel != null) {
-            instruction.label = selectedLabel;
-        }
+  @Override
+  public void addItem(LabelNode item) {
+    // Skip over duplicate LabelNode objects.
+    for (int i = 0; i < getItemCount(); i++) {
+      if (getItemAt(i) == item)
+        return;
     }
-
-    @Override
-    public void addItem(LabelNode item) {
-        // Skip over duplicate LabelNode objects
-        for (int i = 0; i < getItemCount(); i++) {
-            if (getItemAt(i) == item)
-                return;
-        }
-        super.addItem(item);
-    }
+    super.addItem(item);
+  }
 }

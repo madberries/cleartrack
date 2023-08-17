@@ -10,16 +10,14 @@ import pac.inst.InstrumentationMethod;
 @InstrumentationClass("java/net/ServerSocket")
 public final class ServerSocketInstrumentation {
 
-    // INSTRUMENTATION METHODS
+  // INSTRUMENTATION METHODS
 
-    @InstrumentationMethod
-    public static final Socket accept(ServerSocket server) throws IOException {
-        // longer should be trusting files by
-        // default.
-        Socket socket = server.accept();
-        socket.ss_server = true;
-        SocketInstrumentation.setSocketTimeout(socket, true);
-        return socket;
-    }
-    
+  @InstrumentationMethod
+  public static final Socket accept(ServerSocket server) throws IOException {
+    Socket socket = server.accept();
+    socket.ss_server = true;
+    SocketInstrumentation.setSocketTimeout(socket, true);
+    return socket;
+  }
+
 }

@@ -14,38 +14,38 @@ import pac.org.objectweb.asm.tree.FieldInsnNode;
  * @author jeikenberry
  */
 public class FieldComponent extends JTextField implements ActionListener, InstructionComponent {
-    private static final long serialVersionUID = -2979170909873486081L;
+  private static final long serialVersionUID = -2979170909873486081L;
 
-    private FieldInsnNode instruction;
+  private FieldInsnNode instruction;
 
-    public FieldComponent() {
-        super();
+  public FieldComponent() {
+    super();
+  }
+
+  @Override
+  public void setInstruction(AbstractInsnNode instruction) {
+    this.instruction = (FieldInsnNode) instruction;
+    if (instruction != null) {
+      setText(this.instruction.owner + "." + this.instruction.name + ":" + this.instruction.desc);
     }
+    invalidate();
+    revalidate();
+    repaint();
+  }
 
-    @Override
-    public void setInstruction(AbstractInsnNode instruction) {
-        this.instruction = (FieldInsnNode) instruction;
-        if (instruction != null) {
-            setText(this.instruction.owner + "." + this.instruction.name + ":" + this.instruction.desc);
-        }
-        invalidate();
-        revalidate();
-        repaint();
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    String t = getText();
+    if (instruction != null && t != null) {
+      int fieldStart = t.indexOf('.') + 1;
+      if (fieldStart <= 0)
+        return;
+      int fieldEnd = t.indexOf(':', fieldStart);
+      if (fieldEnd < 0)
+        return;
+      instruction.owner = t.substring(0, fieldStart - 1).trim();
+      instruction.name = t.substring(fieldStart, fieldEnd).trim();
+      instruction.desc = t.substring(fieldEnd + 1).trim();
     }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String t = getText();
-        if (instruction != null && t != null) {
-            int fieldStart = t.indexOf('.') + 1;
-            if (fieldStart <= 0)
-                return;
-            int fieldEnd = t.indexOf(':', fieldStart);
-            if (fieldEnd < 0)
-                return;
-            instruction.owner = t.substring(0, fieldStart - 1).trim();
-            instruction.name = t.substring(fieldStart, fieldEnd).trim();
-            instruction.desc = t.substring(fieldEnd + 1).trim();
-        }
-    }
+  }
 }

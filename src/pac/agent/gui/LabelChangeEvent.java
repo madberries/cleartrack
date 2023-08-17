@@ -8,16 +8,16 @@ import pac.org.objectweb.asm.tree.LabelNode;
  * @author jeikenberry
  */
 public class LabelChangeEvent {
-    private LabelNode label;
+  private LabelNode label;
 
-    public LabelChangeEvent(LabelNode label) {
-        this.label = label;
-    }
+  public LabelChangeEvent(LabelNode label) {
+    this.label = label;
+  }
 
-    /**
-     * @return LabelNode associated with this event
-     */
-    public LabelNode getLabel() {
-        return label;
-    }
+  /**
+   * @return LabelNode associated with this event.
+   */
+  public LabelNode getLabel() {
+    return label;
+  }
 }

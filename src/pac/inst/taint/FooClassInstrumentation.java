@@ -8,10 +8,11 @@ import pac.util.TaintUtils;
 @InstrumentationClass("pac/test/FooClass")
 public final class FooClassInstrumentation {
 
-    @InstrumentationMethod(instrumentationType = InstrumentationType.INSERT_AFTER, name = "fooMethod", descriptor = "(Lpac/util/Ret;)Ljava/lang/String;")
-    public static final String postInstFooMethod(String str) {
-        TaintUtils.taint(str);
-        return str;
-    }
-    
+  @InstrumentationMethod(instrumentationType = InstrumentationType.INSERT_AFTER, name = "fooMethod",
+      descriptor = "(Lpac/util/Ret;)Ljava/lang/String;")
+  public static final String postInstFooMethod(String str) {
+    TaintUtils.taint(str);
+    return str;
+  }
+
 }

@@ -8,19 +8,19 @@ import java.util.EventListener;
  * @author jeikenberry
  */
 public interface LabelChangeListener extends EventListener {
-    
-    /**
-     * Indicates that a LabelNode has been added.
-     * 
-     * @param e LabelChangeEvent
-     */
-    public void labelAdded(LabelChangeEvent e);
 
-    /**
-     * Indicates that a LabelNode has been removed.
-     * 
-     * @param e LabelChangeEvent
-     */
-    public void labelRemoved(LabelChangeEvent e);
-    
+  /**
+   * Indicates that a LabelNode has been added.
+   * 
+   * @param e LabelChangeEvent
+   */
+  public void labelAdded(LabelChangeEvent e);
+
+  /**
+   * Indicates that a LabelNode has been removed.
+   * 
+   * @param e LabelChangeEvent
+   */
+  public void labelRemoved(LabelChangeEvent e);
+
 }

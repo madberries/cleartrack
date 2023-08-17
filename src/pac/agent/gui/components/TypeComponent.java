@@ -14,30 +14,30 @@ import pac.org.objectweb.asm.tree.TypeInsnNode;
  * @author jeikenberry
  */
 public class TypeComponent extends JTextField implements ActionListener, InstructionComponent {
-    private static final long serialVersionUID = 7788900653671787171L;
+  private static final long serialVersionUID = 7788900653671787171L;
 
-    private TypeInsnNode instruction;
+  private TypeInsnNode instruction;
 
-    public TypeComponent() {
-        super();
+  public TypeComponent() {
+    super();
+  }
+
+  @Override
+  public void setInstruction(AbstractInsnNode instruction) {
+    this.instruction = (TypeInsnNode) instruction;
+    if (instruction != null) {
+      setText("" + this.instruction.desc);
     }
+    invalidate();
+    revalidate();
+    repaint();
+  }
 
-    @Override
-    public void setInstruction(AbstractInsnNode instruction) {
-        this.instruction = (TypeInsnNode) instruction;
-        if (instruction != null) {
-            setText("" + this.instruction.desc);
-        }
-        invalidate();
-        revalidate();
-        repaint();
+  @Override
+  public void actionPerformed(ActionEvent e) {
+    String t = getText();
+    if (instruction != null && t != null) {
+      instruction.desc = t.trim();
     }
-
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String t = getText();
-        if (instruction != null && t != null) {
-            instruction.desc = t.trim();
-        }
-    }
+  }
 }

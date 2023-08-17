@@ -13,23 +13,24 @@ import pac.util.Ret;
 @InstrumentationClass("java/nio/charset/CharsetEncoder")
 public final class CharsetEncoderInstrumentation {
 
-    @InstrumentationMethod
-    public static final ByteBuffer encode(CharsetEncoder ce, CharBuffer in, Ret ret) throws CharacterCodingException {
-        ByteBuffer out = ce.encode(in, ret);
-        if (out.hasArray())
-            StringInstrumentation.putCharset(out.array(ret), ce.charset(ret));
-        return out;
-    }
+  @InstrumentationMethod
+  public static final ByteBuffer encode(CharsetEncoder ce, CharBuffer in, Ret ret)
+      throws CharacterCodingException {
+    ByteBuffer out = ce.encode(in, ret);
+    if (out.hasArray())
+      StringInstrumentation.putCharset(out.array(ret), ce.charset(ret));
+    return out;
+  }
 
-    @InstrumentationMethod
-    public static final CoderResult encode(CharsetEncoder ce, CharBuffer in, ByteBuffer out, boolean endOfInput,
-                                           int endOfInput_t, Ret ret) {
-        CoderResult res = ce.encode(in, out, endOfInput, endOfInput_t, ret);
-        if (!res.isError()) {
-            if (out.hasArray())
-                StringInstrumentation.putCharset(out.array(ret), ce.charset(ret));
-        }
-        return res;
+  @InstrumentationMethod
+  public static final CoderResult encode(CharsetEncoder ce, CharBuffer in, ByteBuffer out,
+      boolean endOfInput, int endOfInput_t, Ret ret) {
+    CoderResult res = ce.encode(in, out, endOfInput, endOfInput_t, ret);
+    if (!res.isError()) {
+      if (out.hasArray())
+        StringInstrumentation.putCharset(out.array(ret), ce.charset(ret));
     }
-    
+    return res;
+  }
+
 }

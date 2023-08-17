@@ -15,21 +15,21 @@ import pac.util.TaintUtils;
 
 public class SocketInstrumentationTest {
 
-    @Test
-    public void testSocketInputStream() {
-        try {
-            Socket client = new Socket();
-            client.connect(new InetSocketAddress("www.google.com", 80), 500);
-            InputStream s = client.getInputStream();
-            BufferedReader in = new BufferedReader(new InputStreamReader(s));
-            PrintWriter out = new PrintWriter(client.getOutputStream(), true);
-            out.println("GET http://www.google.com HTTP/1.0\n\n");
-            String str = in.readLine();
-            client.close();
-            Assert.assertTrue("string read from socket is not tainted", TaintUtils.isTainted(str));
-        } catch (IOException e) {
-            Assert.fail(e.toString());
-        }
+  @Test
+  public void testSocketInputStream() {
+    try {
+      Socket client = new Socket();
+      client.connect(new InetSocketAddress("www.google.com", 80), 500);
+      InputStream s = client.getInputStream();
+      BufferedReader in = new BufferedReader(new InputStreamReader(s));
+      PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+      out.println("GET http://www.google.com HTTP/1.0\n\n");
+      String str = in.readLine();
+      client.close();
+      Assert.assertTrue("string read from socket is not tainted", TaintUtils.isTainted(str));
+    } catch (IOException e) {
+      Assert.fail(e.toString());
     }
-    
+  }
+
 }

@@ -1,5 +1,5 @@
 package pac.inst;
 
 public enum InvocationType {
-    VIRTUAL, INTERFACE, STATIC, CONSTRUCTOR
+  VIRTUAL, INTERFACE, STATIC, CONSTRUCTOR
 }

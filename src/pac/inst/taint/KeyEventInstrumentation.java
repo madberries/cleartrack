@@ -10,15 +10,14 @@ import pac.util.TaintValues;
 @InstrumentationClass("java/awt/event/KeyEvent")
 public final class KeyEventInstrumentation {
 
-    // PRIMITIVE TAINT WRAPPERS
+  // PRIMITIVE TAINT WRAPPERS
 
-    @InstrumentationMethod
-    public static final char getKeyChar(KeyEvent event, Ret ret) {
-        char c = event.getKeyChar();
-        // Make sure that all characters coming in through a 
-        // keyboard event will come across as tainted.
-        ret.taint = TaintValues.TAINTED | TaintValues.GUI;
-        return c;
-    }
-    
+  @InstrumentationMethod
+  public static final char getKeyChar(KeyEvent event, Ret ret) {
+    char c = event.getKeyChar();
+    // Make sure that all characters coming in through a keyboard event will come across as tainted.
+    ret.taint = TaintValues.TAINTED | TaintValues.GUI;
+    return c;
+  }
+
 }

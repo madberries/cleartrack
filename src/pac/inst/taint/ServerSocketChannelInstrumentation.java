@@ -10,13 +10,13 @@ import pac.inst.InstrumentationMethod;
 @InstrumentationClass("java/nio/channels/ServerSocketChannel")
 public final class ServerSocketChannelInstrumentation {
 
-    // INSTRUMENTATION METHODS
+  // INSTRUMENTATION METHODS
 
-    @InstrumentationMethod
-    public static final SocketChannel accept(ServerSocketChannel serverChannel) throws IOException {
-        SocketChannel channel = serverChannel.accept();
-        SocketChannelInstrumentation.addServersideSocketChannel(channel);
-        return channel;
-    }
-    
+  @InstrumentationMethod
+  public static final SocketChannel accept(ServerSocketChannel serverChannel) throws IOException {
+    SocketChannel channel = serverChannel.accept();
+    SocketChannelInstrumentation.addServersideSocketChannel(channel);
+    return channel;
+  }
+
 }

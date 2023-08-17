@@ -8,21 +8,21 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface InstrumentationMethod {
-    
-    InvocationType invocationType() default InvocationType.VIRTUAL;
 
-    InstrumentationType instrumentationType() default InstrumentationType.REPLACE;
+  InvocationType invocationType() default InvocationType.VIRTUAL;
 
-    InstrumentationLocation instrumentationLocation() default InstrumentationLocation.ALL;
+  InstrumentationType instrumentationType() default InstrumentationType.REPLACE;
 
-    String name() default "";
+  InstrumentationLocation instrumentationLocation() default InstrumentationLocation.ALL;
 
-    String descriptor() default "";
+  String name() default "";
 
-    String skippedDescriptor() default "";
+  String descriptor() default "";
 
-    boolean canExtend() default false;
+  String skippedDescriptor() default "";
 
-    boolean inline() default false;
-    
+  boolean canExtend() default false;
+
+  boolean inline() default false;
+
 }
